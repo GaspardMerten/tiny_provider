@@ -1,10 +1,15 @@
-# TinyProvider 🧩 
+# TinyProvider 🧩
 
 TinyProvider is a Flutter package that provides a simplified way of handling state management
 using ```ChangeNotifier```. It includes a provider widget that can be used to create and share a single instance of
 a ```ChangeNotifier``` across different parts of an application.Installation
 
-## What is included ? 📦 
+## Why TinyProvider ? 🤔 (Why not Provider ?)
+
+Provider is a great package that provides a way to manage state in Flutter applications. However, for
+packages or simpler applications, it can be overkill/unnecessary to use Provider. TinyProvider is an
+alternative to Provider that provides a simplified way of managing state in Flutter applications. I created
+it to use in my other packages and thought it might be useful to others as well.
 
 `tinyControllerOf<T>`: A function that returns the controller of type T from the nearest ancestor
 TinyChangeNotifierProviderWidget<T>. It is used to get the state of a ChangeNotifier from anywhere in the widget tree.
@@ -34,7 +39,7 @@ dependencies:
 
 Then, run ```flutter packages get``` to install the package.Usage```TinyProvider```
 
-## Usage 🤖 
+## Usage 🤖
 
 ```TinyProvider``` is a widget that creates and manages a single instance of a ```ChangeNotifier```. Here is an example
 of how to use it:dart
@@ -142,7 +147,7 @@ In this example, ```myModel``` is an instance of ```MyModel``` obtained from the
 the ```tinyControllerOf``` function. By setting ```listen``` to ```true```, the ```ChangeNotifier``` will automatically
 listen for changes and rebuild the child widget tree whenever changes occur.Contribution
 
-## Contribution 🙌 
+## Contribution 🙌
 
 If you would like to contribute to TinyProvider, feel free to submit a pull request on
 the [GitHub repository](https://github.com/GaspardMerten/tiny_provider)
@@ -153,4 +158,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Credits
 
-TinyProvider is inspired by the [Provider package](https://pub.dev/packages/provider) by Remi Rousselet.
+TinyProvider is inspired by the [Provider package](https://pub.dev/packages/provider) by Remi Rousselet. Altough
+the code is not based on the Provider package, the idea of using a ```ChangeNotifier``` to manage state is inspired by
+the Provider package (so is the tinyProviderOf function).

@@ -123,6 +123,42 @@ void main() {
       expect(find.text('1'), findsOneWidget);
     });
   });
+
+  testWidgets(
+    'Multiple TinyConsumerWidgets rebuild when controller changes',
+    (tester) async {
+      final controller = MyChangeNotifier();
+      final widget = MaterialApp(
+        home: TinyProvider<MyChangeNotifier>(
+          create: (_) => controller,
+          builder: (_, __) => Column(
+            children: [
+              TinyChangeNotifierBuilder<MyChangeNotifier>(
+                builder: (_, controller) =>
+                    Text('Counter: ${controller.counter}'),
+              ),
+              TinyChangeNotifierBuilder<MyChangeNotifier>(
+                builder: (_, controller) =>
+                    Text('Counter squared: ${controller.counter * controller.counter}'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(widget);
+
+      expect(find.text('Counter: 0'), findsOneWidget);
+      expect(find.text('Counter squared: 0'), findsOneWidget);
+
+      controller.increment();
+
+      await tester.pump();
+
+      expect(find.text('Counter: 1'), findsOneWidget);
+      expect(find.text('Counter squared: 1'), findsOneWidget);
+    },
+  );
 }
 
 class _TestConsumerWidget extends TinyConsumerWidget<MyChangeNotifier> {
