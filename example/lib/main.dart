@@ -12,7 +12,6 @@ class CounterController extends ChangeNotifier {
 
   void increment() {
     _counter++;
-    print("CounterController.increment : $_counter");
     notifyListeners();
   }
 
@@ -32,36 +31,34 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: TinyProvider(
-            create: (context) => CounterController(),
-            builder: (context, controller) {
-              return Scaffold(
-                  appBar: AppBar(
-                    title: const Text('Flutter Demo Home Page'),
-                  ),
-                  body: Scaffold(
-                      body: Row(
-                    children: [
-                      Column(children: const [
-                        Text("Version TinyBuilderFor"),
-                        IncrementCounter(),
-                      ]),
-                      Column(children: const [
-                        Text("Version TinyStatelessWidget"),
-                        IncrementCounterExtendVersion(),
-                      ]),
-                      Column(children: const [
-                        Text("Version TinyStatefulWidget"),
-                        IncrementCounterExtendStatefulVersion(),
-                      ]),
-                    ],
-                  )),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: controller.increment,
-                    tooltip: 'Increment',
-                    child: const Icon(Icons.add),
-                  ));
-            }));
+        home: ListenableProvider(
+            listen: false,
+            create: (_) {
+              print("Creating");
+              return CounterController();
+            },
+            builder: (context, controller) => Scaffold(
+                appBar: AppBar(
+                  title: const Text('Flutter Demo Home Page'),
+                ),
+                body: Scaffold(
+                    body: Row(
+                  children: [
+                    Column(children: const [
+                      Text("Version BuilderFor"),
+                      IncrementCounter(),
+                    ]),
+                    Column(children: const [
+                      Text("Version StatelessWidget"),
+                      IncrementCounterExtendVersion(),
+                    ]),
+                  ],
+                )),
+                floatingActionButton: FloatingActionButton(
+                  onPressed: controller.increment,
+                  tooltip: 'Increment',
+                  child: const Icon(Icons.add),
+                ))));
   }
 }
 
@@ -72,7 +69,7 @@ class IncrementCounter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TinyChangeNotifierBuilder<CounterController>(
+    return Consumer<CounterController>(
       builder: (BuildContext context, CounterController controller) {
         return Text("Counter: ${controller.counter}");
       },
@@ -80,33 +77,12 @@ class IncrementCounter extends StatelessWidget {
   }
 }
 
-class IncrementCounterExtendVersion
-    extends TinyConsumerWidget<CounterController> {
+class IncrementCounterExtendVersion extends ConsumerWidget<CounterController> {
   const IncrementCounterExtendVersion({super.key});
 
   @override
   Widget buildWithController(
       BuildContext context, CounterController controller) {
     return Text("Counter: ${(controller).counter}");
-  }
-}
-
-class IncrementCounterExtendStatefulVersion
-    extends TinyListenableProvider<CounterController> {
-  const IncrementCounterExtendStatefulVersion({Key? key}) : super(key: key);
-
-  @override
-  TinyListenableProviderState<TinyListenableProvider<CounterController>, CounterController>
-      createState() {
-    return _IncrementCounterExtendStatefulVersionState();
-  }
-}
-
-class _IncrementCounterExtendStatefulVersionState extends TinyListenableProviderState<
-    IncrementCounterExtendStatefulVersion, CounterController> {
-  @override
-  Widget buildWithController(
-      BuildContext context, CounterController controller) {
-    return Text("Counter: ${controller.counter}");
   }
 }

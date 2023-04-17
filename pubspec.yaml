@@ -1,6 +1,6 @@
 name: tiny_provider
 description: A lightweight Flutter library to manage state (intended for packages)
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/GaspardMerten/tiny_provider
 
 environment:

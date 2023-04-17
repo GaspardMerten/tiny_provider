@@ -1,190 +1,118 @@
 import 'package:flutter/material.dart';
-import 'package:tiny_provider/tiny_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiny_provider/widgets/consumer.dart';
+import 'package:tiny_provider/widgets/provider.dart';
 
-class MyChangeNotifier extends ChangeNotifier {
-  int _counter = 0;
-
-  int get counter => _counter;
+class SuperTestController extends ChangeNotifier {
+  int myValue = 0;
 
   void increment() {
-    _counter++;
+    myValue++;
     notifyListeners();
-  }
-
-  @override
-  String toString() {
-    return 'MyChangeNotifier{counter: $_counter}';
   }
 }
 
 void main() {
-  group('Tiny Provider Tests', () {
-    testWidgets(
-        'TinyProvider creates controller with correct type and builds child widget',
-        (tester) async {
-      final widget = MaterialApp(
-        home: TinyProvider<MyChangeNotifier>(
-          create: (_) => MyChangeNotifier(),
-          builder: (_, __) => Builder(
-            builder: (BuildContext context) {
-              return Text(
-                  tinyControllerOf<MyChangeNotifier>(context).toString());
-            },
-          ),
+  group('ListenableProvider', () {
+    testWidgets('builds with default parameters', (tester) async {
+      await tester.pumpWidget(
+        ListenableProvider<SuperTestController>(
+          create: (context) => SuperTestController(),
+          builder: (context, listener) {
+            return Container();
+          },
         ),
       );
 
-      await tester.pumpWidget(widget);
-
-      expect(find.text('MyChangeNotifier{counter: 0}'), findsOneWidget);
+      expect(find.byType(Container), findsOneWidget);
     });
 
-    testWidgets(
-        'TinyProvider rebuilds child widget when controller notifies listeners',
-        (tester) async {
-      final controller = MyChangeNotifier();
-      final widget = MaterialApp(
-        home: TinyProvider<MyChangeNotifier>(
-          create: (_) => controller,
-          builder: (_, __) => Text('${controller.counter}'),
+    testWidgets('builds with listen: true', (tester) async {
+      await tester.pumpWidget(
+        ListenableProvider<SuperTestController>(
+          create: (context) => SuperTestController(),
+          builder: (context, listener) {
+            return Container();
+          },
+          listen: true,
         ),
       );
 
-      await tester.pumpWidget(widget);
-
-      expect(find.text('0'), findsOneWidget);
-
-      controller.increment();
-
-      await tester.pump();
-
-      expect(find.text('1'), findsOneWidget);
+      expect(find.byType(Container), findsOneWidget);
     });
 
-    testWidgets(
-        'TinyChangeNotifierBuilder builds child widget with correct controller type',
-        (tester) async {
-      final controller = MyChangeNotifier();
-      final widget = MaterialApp(
-        home: TinyChangeNotifierProviderWidget<MyChangeNotifier>(
-          controller: controller,
-          child: TinyChangeNotifierBuilder<MyChangeNotifier>(
-            builder: (_, __) => Text('${controller.counter}'),
-          ),
+    testWidgets('builds with listen: false', (tester) async {
+      await tester.pumpWidget(
+        ListenableProvider<SuperTestController>(
+          create: (context) => SuperTestController(),
+          builder: (context, listener) {
+            return Container();
+          },
+          listen: false,
         ),
       );
 
-      await tester.pumpWidget(widget);
-
-      expect(find.text('0'), findsOneWidget);
+      expect(find.byType(Container), findsOneWidget);
     });
+  });
 
-    testWidgets(
-        'TinyConsumerWidget builds child widget with correct controller type and listens to controller',
-        (tester) async {
-      final controller = MyChangeNotifier();
-      final widget = MaterialApp(
-        home: TinyChangeNotifierProviderWidget<MyChangeNotifier>(
-          controller: controller,
-          child: _TestConsumerWidget(),
+  group('Consumer', () {
+    testWidgets('rebuilds when value changes', (tester) async {
+      final myListenable = SuperTestController();
+
+      await tester.pumpWidget(
+        ListenableProvider<SuperTestController>(
+          create: (context) => myListenable,
+          builder: (context, listener) {
+            return Consumer<SuperTestController>(
+              builder: (context, listener) {
+                return MaterialApp(
+                    home: Text(
+                  listener.myValue.toString(),
+                ));
+              },
+            );
+          },
         ),
       );
 
-      await tester.pumpWidget(widget);
-
       expect(find.text('0'), findsOneWidget);
 
-      controller.increment();
-
-      await tester.pump();
-
-      expect(find.text('1'), findsOneWidget);
-    });
-
-    testWidgets(
-        'TinyListenableProvider builds child widget with correct controller type and listens to controller',
-        (tester) async {
-      final controller = MyChangeNotifier();
-      final widget = MaterialApp(
-        home: TinyProvider(
-            create: (_) => controller,
-            builder: (_, __) => const _TestListenableProvider()),
-      );
-
-      await tester.pumpWidget(widget);
-
-      expect(find.text('0'), findsOneWidget);
-
-      controller.increment();
-
+      myListenable.increment();
       await tester.pump();
 
       expect(find.text('1'), findsOneWidget);
     });
   });
 
-  testWidgets(
-    'Multiple TinyConsumerWidgets rebuild when controller changes',
-    (tester) async {
-      final controller = MyChangeNotifier();
-      final widget = MaterialApp(
-        home: TinyProvider<MyChangeNotifier>(
-          create: (_) => controller,
-          builder: (_, __) => Column(
-            children: [
-              TinyChangeNotifierBuilder<MyChangeNotifier>(
-                builder: (_, controller) =>
-                    Text('Counter: ${controller.counter}'),
-              ),
-              TinyChangeNotifierBuilder<MyChangeNotifier>(
-                builder: (_, controller) =>
-                    Text('Counter squared: ${controller.counter * controller.counter}'),
-              ),
-            ],
-          ),
+  group('ChangeNotifierProvider', () {
+    testWidgets('builds with default parameters', (tester) async {
+      await tester.pumpWidget(
+        ChangeNotifierProvider<SuperTestController>(
+          create: (context) => SuperTestController(),
+          builder: (context, listener) {
+            return Container();
+          },
         ),
       );
 
-      await tester.pumpWidget(widget);
+      expect(find.byType(Container), findsOneWidget);
+    });
+  });
 
-      expect(find.text('Counter: 0'), findsOneWidget);
-      expect(find.text('Counter squared: 0'), findsOneWidget);
+  group('InheritedProvider', () {
+    testWidgets('throws an assertion error when no InheritedProvider is found',
+        (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            InheritedProvider.of<SuperTestController>(context);
+            return Container();
+          },
+        ),
+      );
 
-      controller.increment();
-
-      await tester.pump();
-
-      expect(find.text('Counter: 1'), findsOneWidget);
-      expect(find.text('Counter squared: 1'), findsOneWidget);
-    },
-  );
-}
-
-class _TestConsumerWidget extends TinyConsumerWidget<MyChangeNotifier> {
-  @override
-  Widget buildWithController(
-      BuildContext context, MyChangeNotifier controller) {
-    return Text('${controller.counter}');
-  }
-}
-
-class _TestListenableProvider extends TinyListenableProvider<MyChangeNotifier> {
-  const _TestListenableProvider();
-
-
-  @override
-  TinyListenableProviderState<_TestListenableProvider, MyChangeNotifier>
-      createState() {
-    return _TestListenableProviderState();
-  }
-}
-
-class _TestListenableProviderState extends TinyListenableProviderState<
-    _TestListenableProvider, MyChangeNotifier> {
-  @override
-  Widget buildWithController(
-      BuildContext context, MyChangeNotifier controller) {
-    return Text('${controller.counter}');
-  }
+      expect(tester.takeException(), isAssertionError);
+    });
+  });
 }

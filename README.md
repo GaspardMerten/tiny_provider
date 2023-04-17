@@ -1,59 +1,48 @@
-# TinyProvider 🧩
+# Tiny Provider
 
-TinyProvider is a Flutter package that provides a simplified way of handling state management
-using ```ChangeNotifier```. It includes a provider widget that can be used to create and share a single instance of
-a ```ChangeNotifier``` across different parts of an application.Installation
+Tiny Provider is a Flutter package that provides a lightweight solution for state management in small applications or
+packages that do not require a full-fledged state management solution. It is based on the Provider package and provides
+two main widgets: ```ListenableProvider``` and ```ChangeNotifierProvider```.
 
-## Why TinyProvider ? 🤔 (Why not Provider ?)
+## Installation
 
-Provider is a great package that provides a way to manage state in Flutter applications. However, for
-packages or simpler applications, it can be overkill/unnecessary to use Provider. TinyProvider is an
-alternative to Provider that provides a simplified way of managing state in Flutter applications. I created
-it to use in my other packages and thought it might be useful to others as well.
-
-`tinyControllerOf<T>`: A function that returns the controller of type T from the nearest ancestor
-TinyChangeNotifierProviderWidget<T>. It is used to get the state of a ChangeNotifier from anywhere in the widget tree.
-
-`TinyProvider<T>`: A StatefulWidget that creates and manages a controller of type T. It is used to create and manage a
-ChangeNotifier for use with TinyConsumerWidget and TinyListenableProvider.
-
-`TinyChangeNotifierBuilder<T>`: A StatelessWidget that builds a widget tree with a controller of type T. It is used to
-build a widget tree that depends on the state of a ChangeNotifier.
-
-`TinyConsumerWidget<T>`: An abstract StatelessWidget that builds a widget tree with a controller of type T and provides
-a method buildWithController that must be implemented by subclasses. It is used to build a widget tree that depends on
-the state of a ChangeNotifier.
-
-`TinyListenableProvider<T>`: An abstract StatefulWidget that provides a controller of type T to its descendants and
-rebuilds the widget tree when the controller changes. It is used to rebuild the widget tree when the state of a
-ChangeNotifier changes.
-
-## Installation 🪛
-
-To use TinyProvider in your Flutter project, add it to your ```pubspec.yaml``` file`:
+Add the following to your ```pubspec.yaml``` file:
 
 ```yaml
 dependencies:
   tiny_provider: ^latest_version
 ```
 
-Then, run ```flutter packages get``` to install the package.Usage```TinyProvider```
+## Getting Started
 
-## Usage 🤖
-
-```TinyProvider``` is a widget that creates and manages a single instance of a ```ChangeNotifier```. Here is an example
-of how to use it:dart
+To use Tiny Provider, you must first import the package:
 
 ```dart
 import 'package:tiny_provider/tiny_provider.dart';
+```
 
-class MyModel extends ChangeNotifier {
-  int _counter = 0;
+Then, you can use the ```ListenableProvider``` or ```ChangeNotifierProvider``` widgets to create a ```Listenable```
+object of type ```T``` and provide it to its descendants via an ```InheritedProvider``` widget. You can then use
+the ```Consumer``` widget to listen to changes in the ```Listenable``` object and rebuild its child widgets whenever
+the ```Listenable``` changes.
 
-  int get counter => _counter;
+## Example
 
-  void incrementCounter() {
-    _counter++;
+```dart
+import 'package:flutter/material.dart';
+import 'package:tiny_provider/tiny_provider.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class Counter extends ChangeNotifier {
+  int _count = 0;
+
+  int get count => _count;
+
+  void increment() {
+    _count++;
     notifyListeners();
   }
 }
@@ -61,103 +50,98 @@ class MyModel extends ChangeNotifier {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: TinyProvider<MyModel>(
-        create: (context) => MyModel(),
-        builder: (context, model) =>
-            Scaffold(
-              body: Center(
-                child: CounterWidget(),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () => model.incrementCounter(),
-                tooltip: 'Increment',
-                child: Icon(Icons.add),
-              ),
-            ),
+    return ChangeNotifierProvider(
+      create: (_) => Counter(),
+      child: MaterialApp(
+        title: 'My App',
+        home: MyHomePage(),
       ),
     );
   }
 }
 
-class CounterWidget extends StatelessWidget {
-  const CounterWidget({
-    super.key,
-  });
-
+class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final model = tinyControllerOf<MyModel>(context, listen: true);
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          'You have pushed the button this many times:',
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('My App'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Consumer<Counter>(
+              builder: (context, counter, child) {
+                return Text(
+                  '${counter.count}',
+                );
+              },
+            ),
+            MyText(),
+          ],
         ),
-        Text(
-          '${model.counter}',
-          style: Theme
-              .of(context)
-              .textTheme
-              .headline4,
-        ),
-      ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.of<Counter>().increment(),
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ),
     );
   }
 }
 
-```
-
-In this example, ```MyModel``` is a ```ChangeNotifier``` that manages a counter. The ```TinyProvider``` widget is used
-to create an instance of ```MyModel``` and pass it down to the child widget tree. The child widget tree can then use the
-provided ```MyModel``` instance to manage and update the counter.```TinyConsumerWidget```
-
-```TinyConsumerWidget``` is a widget that can be used to listen to changes in a ```ChangeNotifier``` and rebuild its
-child widget tree accordingly. Here is an example of how to use it:dart
-
-```dart
-class MyConsumerWidget extends TinyConsumerWidget<MyModel> {
+/// Or use an extension to access the Listenable object
+class MyText extends StatelessWidget {
   @override
-  Widget buildWithController(BuildContext context, MyModel model) {
-    return Text(
-      '${model.counter}',
-      style: Theme
-          .of(context)
-          .textTheme
-          .headline4,
-    );
+  Widget build(BuildContext context) {
+    final counter = context.watch<Counter>();
+    
+        return Text(
+          '${counter.count}',
+      );
   }
 }
 ```
 
-In this example, ```MyConsumerWidget``` is a child widget that listens to changes in the ```MyModel``` instance provided
-by the parent ```TinyProvider``` widget. Whenever the counter in ```MyModel``` changes, ```MyConsumerWidget``` will
-rebuild its child widget tree with the updated counter value.```tinyControllerOf```
+## Extensions
 
-```tinyControllerOf``` is a utility function that can be used to retrieve the instance of a ```ChangeNotifier```
-provided by a parent ```TinyProvider``` widget. Here is an example of how to use it:dart
+Tiny Provider also provides an extension on the ```BuildContext``` class that adds methods for
+retrieving ```Listenable``` objects from the nearest ```InheritedProvider``` ancestor widget. By using extensions, we
+can simplify the code required to access ```Listenable``` objects in our widget tree. Instead of using
+the ```InheritedProvider.of``` method directly, we can use the ```of``` and ```watch``` methods provided by
+the ```ChangeNotifierProviderExtension``` extension on ```BuildContext```. These methods provide a more concise and
+readable way of accessing ```Listenable``` objects, and make it easier to refactor our code if we need to change the
+type of the ```Listenable```. The ```watch``` is simply a wrapper around the ```of``` method that has listen set to
+true by default.
 
-```dart
 
-final myModel = tinyControllerOf<MyModel>(context, listen: true);
-```
+## ListenableProvider
 
-In this example, ```myModel``` is an instance of ```MyModel``` obtained from the parent ```TinyProvider``` widget using
-the ```tinyControllerOf``` function. By setting ```listen``` to ```true```, the ```ChangeNotifier``` will automatically
-listen for changes and rebuild the child widget tree whenever changes occur.Contribution
+The ```ListenableProvider``` widget is used to create a ```Listenable``` object of type ```T``` and provide it to its
+descendants via an ```InheritedProvider``` widget. It takes in a ```create``` function that creates
+the ```Listenable```, a ```builder``` function that builds the widget tree that depends on the ```Listenable```, and an
+optional ```onDispose``` function that is called when the widget is disposed.
 
-## Contribution 🙌
+## ChangeNotifierProvider
 
-If you would like to contribute to TinyProvider, feel free to submit a pull request on
-the [GitHub repository](https://github.com/GaspardMerten/tiny_provider)
+The ```ChangeNotifierProvider``` widget is used to create a ```ChangeNotifier``` object of type ```T``` and provide it
+to its descendants via a ```ListenableProvider``` widget. It takes in a ```create``` function that creates
+the ```ChangeNotifier```, a ```builder``` function that builds the widget tree that depends on the ```ChangeNotifier```,
+and an optional ```onDispose``` function that is called when the widget is disposed.
 
-## License 📜
+## Consumer
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Tiny Provider also provides a ```Consumer``` widget that can be used to listen to changes in a ```Listenable``` object
+and rebuild its child widgets whenever the ```Listenable``` changes. It takes in a ```listen``` boolean flag and
+a ```builder``` function that builds the widget tree that depends on the ```Listenable```.
 
-## Credits
+## InheritedProvider
 
-TinyProvider is inspired by the [Provider package](https://pub.dev/packages/provider) by Remi Rousselet. Altough
-the code is not based on the Provider package, the idea of using a ```ChangeNotifier``` to manage state is inspired by
-the Provider package (so is the tinyProviderOf function).
+Finally, Tiny Provider provides an ```InheritedProvider``` widget that is used to provide a ```Listenable``` to its
+descendants via an ```InheritedWidget```. It takes in a ```notifier``` object of type ```T```, which must
+extend ```Listenable```, and passes it down the widget tree to any widgets that call ```of``` on this context with a
+matching ```T```.
+
+So, if you need a lightweight solution for state management in your Flutter application, give Tiny Provider a try!
+
